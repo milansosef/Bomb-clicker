@@ -1,35 +1,45 @@
 /// <reference path="./gameObject" />
 
 class Car extends GameObject {
-    private game:Game
-	private speed:number
-    private posx:number
-    private posy:number
+	private leftSpeed:number
+	private rightSpeed:number
         
     constructor() {
 		super("Car")
-		this.game = Game.getInstance()
+		this.leftSpeed = 0
+		this.rightSpeed = 0
+		this.posx = 0
+		this.posy = 550
 		
-		this.element.addEventListener("click", () => {this.carClickHandler()})
-		
-		this.speed = 5
-        this.posx = Math.floor(Math.random() * (-15000 - 4000) - 4000)
-        this.posy = 550
-    }
-
-    public update():void {
-		if(this.posx >= window.innerWidth){
-			this.posx = Math.floor(Math.random() * (-15000 - 4000) - 4000)
-			this.speed = 5
-		} else {
-			this.posx += this.speed
-			this.element.style.transform = `translate(${this.posx}px, ${this.posy}px)`
-		}
+		window.addEventListener("keydown", (e:KeyboardEvent) => this.onKeyDown(e))
+        window.addEventListener("keyup", (e:KeyboardEvent) => this.onKeyUp(e))
 	}
 	
-	private carClickHandler():void {
-		this.game.resetBuilding()
-		this.speed += 20 
+	public update() {
+		super.update()
+		this.posx += this.rightSpeed
+		this.posx -= this.leftSpeed
 	}
 
+	onKeyDown(event:KeyboardEvent):void {
+        switch(event.keyCode){
+        case 87:
+            this.leftSpeed = 5
+            break
+        case 83:
+            this.rightSpeed = 5
+            break
+        }
+    }
+    
+    onKeyUp(event:KeyboardEvent):void {
+        switch(event.keyCode){
+        case 87:
+            this.leftSpeed = 0
+            break
+        case 83:
+            this.rightSpeed = 0
+            break
+        }
+	}
 }

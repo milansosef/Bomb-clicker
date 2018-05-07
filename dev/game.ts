@@ -6,7 +6,7 @@ class Game {
 	private statusbar:HTMLElement
 	private statusbarPos:number
 	private bombArray:Array<Bomb> = []
-	private car:Car
+	public car:Car
     
     private constructor() {
         this.textfield = document.getElementsByTagName("textfield")[0] as HTMLElement
@@ -28,14 +28,15 @@ class Game {
     
     // timer for bombs
     private gameLoop():void {
-		// console.log("updating the game")
+		this.car.update()
+		for (let b of this.bombArray) {
+			b.update()
+		}
+		this.checkBombHitCar()
+		
 		if(this.destroyed == 4) {
 			console.log("Game over!")
 		} else {
-			this.car.update()
-			for (let b of this.bombArray) {
-				b.update()
-			}
 			requestAnimationFrame(() => this.gameLoop())
 		}
 	}
@@ -43,6 +44,22 @@ class Game {
 	private createBombs():void {
 		for(let i = 0; i < 4; i++) {
 			this.bombArray.push(new Bomb())
+		}
+	}
+
+	private checkBombHitCar() {
+		let carRect = this.car.getRect()
+		for (let b of this.bombArray) {
+			let bombRect = b.getRect()
+			if(Util.checkCollision(bombRect, carRect)) {
+				this.scorePoint()
+
+				let i = this.bombArray.indexOf(b)
+				this.bombArray.splice(i, 1)
+				b.removeMe()
+
+				this.bombArray.push(new Bomb())
+			}
 		}
 	}
 
@@ -59,7 +76,7 @@ class Game {
 		this.statusbarPos = 0
 		this.statusbar.style.backgroundPositionX = this.statusbarPos + "px"
 	}
-       
+
     public scorePoint() {
         this.score ++
         this.textfield.innerHTML = "Score: " + this.score

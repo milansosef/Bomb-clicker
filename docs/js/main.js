@@ -10,39 +10,42 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 var GameObject = (function () {
-    function GameObject(element) {
-        this.element = document.createElement(element);
+    function GameObject(e) {
+        this.element = document.createElement(e);
         var foreground = document.getElementsByTagName("foreground")[0];
         foreground.appendChild(this.element);
+        this.posy = 0;
+        this.posx = 0;
     }
+    GameObject.prototype.getRect = function () {
+        return this.element.getBoundingClientRect();
+    };
+    GameObject.prototype.update = function () {
+        this.element.style.transform = "translate(" + this.posx + "px, " + this.posy + "px)";
+    };
     return GameObject;
 }());
 var Bomb = (function (_super) {
     __extends(Bomb, _super);
     function Bomb() {
         var _this = _super.call(this, "bomb") || this;
-        _this.game = Game.getInstance();
-        _this.element.addEventListener("click", function () { _this.bombClickHandler(_this); });
         _this.speed = Math.floor(Math.random() * (6 - 3) + 3);
         _this.posy = Math.floor(Math.random() * (1000 - window.innerHeight) - window.innerHeight);
         _this.posx = Math.floor(Math.random() * window.innerWidth);
         return _this;
     }
     Bomb.prototype.update = function () {
+        _super.prototype.update.call(this);
         if (this.posy >= window.innerHeight) {
             this.posy = Math.floor(Math.random() * (1000 - window.innerHeight) - window.innerHeight);
             this.posx = Math.floor(Math.random() * window.innerWidth);
-            this.game.destroyBuilding();
+            var game = Game.getInstance();
+            game.destroyBuilding();
         }
-        else {
-            this.posy += this.speed;
-        }
-        this.element.style.transform = "translate(" + this.posx + "px, " + this.posy + "px)";
+        this.posy += this.speed;
     };
-    Bomb.prototype.bombClickHandler = function (bombClicked) {
-        bombClicked.posy = Math.floor(Math.random() * (1000 - window.innerHeight) - window.innerHeight);
-        bombClicked.posx = Math.floor(Math.random() * window.innerWidth);
-        this.game.scorePoint();
+    Bomb.prototype.removeMe = function () {
+        this.element.remove();
     };
     return Bomb;
 }(GameObject));
@@ -50,26 +53,38 @@ var Car = (function (_super) {
     __extends(Car, _super);
     function Car() {
         var _this = _super.call(this, "Car") || this;
-        _this.game = Game.getInstance();
-        _this.element.addEventListener("click", function () { _this.carClickHandler(); });
-        _this.speed = 5;
-        _this.posx = Math.floor(Math.random() * (-15000 - 4000) - 4000);
+        _this.leftSpeed = 0;
+        _this.rightSpeed = 0;
+        _this.posx = 0;
         _this.posy = 550;
+        window.addEventListener("keydown", function (e) { return _this.onKeyDown(e); });
+        window.addEventListener("keyup", function (e) { return _this.onKeyUp(e); });
         return _this;
     }
     Car.prototype.update = function () {
-        if (this.posx >= window.innerWidth) {
-            this.posx = Math.floor(Math.random() * (-15000 - 4000) - 4000);
-            this.speed = 5;
-        }
-        else {
-            this.posx += this.speed;
-            this.element.style.transform = "translate(" + this.posx + "px, " + this.posy + "px)";
+        _super.prototype.update.call(this);
+        this.posx += this.rightSpeed;
+        this.posx -= this.leftSpeed;
+    };
+    Car.prototype.onKeyDown = function (event) {
+        switch (event.keyCode) {
+            case 87:
+                this.leftSpeed = 5;
+                break;
+            case 83:
+                this.rightSpeed = 5;
+                break;
         }
     };
-    Car.prototype.carClickHandler = function () {
-        this.game.resetBuilding();
-        this.speed += 20;
+    Car.prototype.onKeyUp = function (event) {
+        switch (event.keyCode) {
+            case 87:
+                this.leftSpeed = 0;
+                break;
+            case 83:
+                this.rightSpeed = 0;
+                break;
+        }
     };
     return Car;
 }(GameObject));
@@ -93,21 +108,36 @@ var Game = (function () {
     };
     Game.prototype.gameLoop = function () {
         var _this = this;
+        this.car.update();
+        for (var _i = 0, _a = this.bombArray; _i < _a.length; _i++) {
+            var b = _a[_i];
+            b.update();
+        }
+        this.checkBombHitCar();
         if (this.destroyed == 4) {
             console.log("Game over!");
         }
         else {
-            this.car.update();
-            for (var _i = 0, _a = this.bombArray; _i < _a.length; _i++) {
-                var b = _a[_i];
-                b.update();
-            }
             requestAnimationFrame(function () { return _this.gameLoop(); });
         }
     };
     Game.prototype.createBombs = function () {
         for (var i = 0; i < 4; i++) {
             this.bombArray.push(new Bomb());
+        }
+    };
+    Game.prototype.checkBombHitCar = function () {
+        var carRect = this.car.getRect();
+        for (var _i = 0, _a = this.bombArray; _i < _a.length; _i++) {
+            var b = _a[_i];
+            var bombRect = b.getRect();
+            if (Util.checkCollision(bombRect, carRect)) {
+                this.scorePoint();
+                var i = this.bombArray.indexOf(b);
+                this.bombArray.splice(i, 1);
+                b.removeMe();
+                this.bombArray.push(new Bomb());
+            }
         }
     };
     Game.prototype.destroyBuilding = function () {
@@ -133,8 +163,11 @@ window.addEventListener("load", function () {
 var Util = (function () {
     function Util() {
     }
-    Util.checkCollision = function () {
-        console.log("Static method uitgevoerd");
+    Util.checkCollision = function (a, b) {
+        return (a.left <= b.right &&
+            b.left <= a.right &&
+            a.top <= b.bottom &&
+            b.top <= a.bottom);
     };
     return Util;
 }());
