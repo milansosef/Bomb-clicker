@@ -1,15 +1,32 @@
 "use strict";
-var Bomb = (function () {
-    function Bomb(game) {
-        var _this = this;
-        this.game = game;
-        this.element = document.createElement("bomb");
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var GameObject = (function () {
+    function GameObject(element) {
+        this.element = document.createElement(element);
         var foreground = document.getElementsByTagName("foreground")[0];
         foreground.appendChild(this.element);
-        this.element.addEventListener("click", function () { _this.bombClickHandler(_this); });
-        this.speed = Math.floor(Math.random() * (6 - 3) + 3);
-        this.posy = Math.floor(Math.random() * (1000 - window.innerHeight) - window.innerHeight);
-        this.posx = Math.floor(Math.random() * window.innerWidth);
+    }
+    return GameObject;
+}());
+var Bomb = (function (_super) {
+    __extends(Bomb, _super);
+    function Bomb() {
+        var _this = _super.call(this, "bomb") || this;
+        _this.game = Game.getInstance();
+        _this.element.addEventListener("click", function () { _this.bombClickHandler(_this); });
+        _this.speed = Math.floor(Math.random() * (6 - 3) + 3);
+        _this.posy = Math.floor(Math.random() * (1000 - window.innerHeight) - window.innerHeight);
+        _this.posx = Math.floor(Math.random() * window.innerWidth);
+        return _this;
     }
     Bomb.prototype.update = function () {
         if (this.posy >= window.innerHeight) {
@@ -28,18 +45,17 @@ var Bomb = (function () {
         this.game.scorePoint();
     };
     return Bomb;
-}());
-var Car = (function () {
-    function Car(game) {
-        var _this = this;
-        this.game = game;
-        this.element = document.createElement("car");
-        var foreground = document.getElementsByTagName("foreground")[0];
-        foreground.appendChild(this.element);
-        this.element.addEventListener("click", function () { _this.carClickHandler(); });
-        this.speed = 5;
-        this.posx = Math.floor(Math.random() * (-15000 - 4000) - 4000);
-        this.posy = 550;
+}(GameObject));
+var Car = (function (_super) {
+    __extends(Car, _super);
+    function Car() {
+        var _this = _super.call(this, "Car") || this;
+        _this.game = Game.getInstance();
+        _this.element.addEventListener("click", function () { _this.carClickHandler(); });
+        _this.speed = 5;
+        _this.posx = Math.floor(Math.random() * (-15000 - 4000) - 4000);
+        _this.posy = 550;
+        return _this;
     }
     Car.prototype.update = function () {
         if (this.posx >= window.innerWidth) {
@@ -56,7 +72,7 @@ var Car = (function () {
         this.speed += 20;
     };
     return Car;
-}());
+}(GameObject));
 var Game = (function () {
     function Game() {
         this.score = 0;
@@ -66,9 +82,15 @@ var Game = (function () {
         this.statusbar = document.getElementsByTagName("bar")[0];
         this.statusbarPos = 0;
         this.createBombs();
-        this.car = new Car(this);
+        this.car = new Car();
         this.gameLoop();
     }
+    Game.getInstance = function () {
+        if (!Game.instance) {
+            Game.instance = new Game();
+        }
+        return Game.instance;
+    };
     Game.prototype.gameLoop = function () {
         var _this = this;
         if (this.destroyed == 4) {
@@ -85,7 +107,7 @@ var Game = (function () {
     };
     Game.prototype.createBombs = function () {
         for (var i = 0; i < 4; i++) {
-            this.bombArray.push(new Bomb(this));
+            this.bombArray.push(new Bomb());
         }
     };
     Game.prototype.destroyBuilding = function () {
@@ -106,6 +128,14 @@ var Game = (function () {
     return Game;
 }());
 window.addEventListener("load", function () {
-    new Game();
+    Game.getInstance();
 });
+var Util = (function () {
+    function Util() {
+    }
+    Util.checkCollision = function () {
+        console.log("Static method uitgevoerd");
+    };
+    return Util;
+}());
 //# sourceMappingURL=main.js.map

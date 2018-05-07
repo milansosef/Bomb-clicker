@@ -1,16 +1,14 @@
-class Bomb {
+/// <reference path="./gameObject" />
+
+class Bomb extends GameObject {
 	private game:Game;
-	private element: HTMLElement
 	private speed:number
     private posy:number
     private posx:number
         
-    constructor(game:Game) {
-		this.game = game;
-		
-        this.element = document.createElement("bomb")
-        let foreground = document.getElementsByTagName("foreground")[0]
-		foreground.appendChild(this.element)
+    constructor() {
+		super("bomb")
+		this.game = Game.getInstance()
 		
 		this.element.addEventListener("click", () => {this.bombClickHandler(this)})
 		

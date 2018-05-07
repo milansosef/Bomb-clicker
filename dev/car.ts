@@ -1,15 +1,14 @@
-class Car {
+/// <reference path="./gameObject" />
+
+class Car extends GameObject {
     private game:Game
-	private element: HTMLElement
 	private speed:number
     private posx:number
     private posy:number
         
-    constructor(game:Game) {
-		this.game = game;
-        this.element = document.createElement("car")
-        let foreground = document.getElementsByTagName("foreground")[0]
-		foreground.appendChild(this.element);
+    constructor() {
+		super("Car")
+		this.game = Game.getInstance()
 		
 		this.element.addEventListener("click", () => {this.carClickHandler()})
 		

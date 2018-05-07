@@ -1,4 +1,5 @@
 class Game {
+	private static instance: Game
     private score:number = 0
     private destroyed:number = 0
     private textfield:HTMLElement
@@ -7,16 +8,23 @@ class Game {
 	private bombArray:Array<Bomb> = []
 	private car:Car
     
-    constructor() {
+    private constructor() {
         this.textfield = document.getElementsByTagName("textfield")[0] as HTMLElement
 		this.statusbar = document.getElementsByTagName("bar")[0] as HTMLElement
 		this.statusbarPos = 0
 		
 		this.createBombs()
-		this.car = new Car(this)
+		this.car = new Car()
 
         this.gameLoop()
-    }
+	}
+	
+	public static getInstance() {
+		if (! Game.instance) {
+			Game.instance = new Game()
+		}
+		return Game.instance
+	}
     
     // timer for bombs
     private gameLoop():void {
@@ -34,7 +42,7 @@ class Game {
 	
 	private createBombs():void {
 		for(let i = 0; i < 4; i++) {
-			this.bombArray.push(new Bomb(this))
+			this.bombArray.push(new Bomb())
 		}
 	}
 
@@ -59,5 +67,5 @@ class Game {
 } 
 
 window.addEventListener("load", () => {
-    new Game();
+	Game.getInstance()
 });
